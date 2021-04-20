@@ -1,11 +1,13 @@
 import random
 import string
 import time
-import requests
 
 import pywinauto
-import pytils
 from pywinauto import application
+
+import sms_activate_new
+import sms_active
+from change_proxy import update_proxy
 
 number = {1: (450, 540),
           2: (550, 540),
@@ -75,95 +77,27 @@ names = [("Александр", "m"),
          ("Таисия", "w"),
          ]
 last_names = ["Гусь", "Лось", "Крот", "Холод", "Царь", "Князь", "Шабан", "Юсуп", "Бык"]
-country_codes = [0, 0, 0, 135, 0, 2, 0, 11, 0, 115, 0, 6, 0]
-first_code = [0, 38, 27, 115, 2, 6, 12, 36]
+
+autoreg_phone = 0
 
 
-
-def get_number(attempt=0):
-    code = 0
-    try:
-        if attempt == 0:
-            code = random.choice(first_code)
-        else:
-            code = country_codes[attempt]
-    except Exception as e:
-        pass
-    get_key = 'https://sms-activate.ru/stubs/handler_api.php?api_key={}&action=getNumber&service=fb&country={}'.format(
-        sms_active_key, code)
-    key_info = requests.get(get_key)
-    # 'ACCESS_NUMBER:325929094:77715984276'
-    data_sms_active = key_info.text
-    print("key")
-
-    if data_sms_active == 'NO_BALANCE':
-        raise Exception('NO_BALANCE')
-    if data_sms_active == 'NO_NUMBERS':
-        print("NO_NUMBERS")
-        time.sleep(5)
-        if attempt + 1 >= len(country_codes):
-            return None, None
-        else:
-            return get_number(attempt + 1)
-
-    try:
-        data_split = data_sms_active.split(":")
-        phone = data_split[2]
-        id = data_split[1]
-    except Exception:
-        if attempt + 1 >= len(country_codes):
-            return None, None
-        else:
-            return get_number(attempt + 1)
-    return phone, id
+def get_number():
+    if autoreg_phone == 1:
+        return sms_active.get_number()
+    else:
+        return sms_activate_new.get_number()
 
 
-def get_status(id):
-    return requests.get(
-        'https://sms-activate.ru/stubs/handler_api.php?api_key={}&action=getStatus&id={}'.format(
-            sms_active_key, id)).text
+def get_key(id):
+    if autoreg_phone == 1:
+        return sms_active.get_key(id)
+    else:
+        return sms_activate_new.get_key(id)
 
 
 def get_pass(length):
     password = ''.join(random.choice(string.ascii_uppercase) for i in range(int(length / 2)))
     return password.join(random.choice(string.ascii_lowercase) for i in range(int(length / 2)))
-
-
-def get_key(id, attempt=0):
-    try:
-        status_text = get_status(id)
-        if status_text == "STATUS_WAIT_CODE":
-            print(status_text)
-            time.sleep(15)
-            if attempt > 5:
-                deactive_phone(id)
-                return None
-            attempt += 1
-            return get_key(id, attempt)
-        if "STATUS_OK" in status_text:
-            completed_phone(id)
-            return status_text.split(":")[1]
-    except Exception as e:
-        deactive_phone(id)
-        return None
-
-
-def completed_phone(id):
-    try:
-        requests.get(
-            'https://sms-activate.ru/stubs/handler_api.php?api_key={}&action=setStatus&id={}&status=6'.format(
-                sms_active_key, id))
-    except Exception:
-        pass
-
-
-def deactive_phone(id):
-    try:
-        requests.get(
-            'https://sms-activate.ru/stubs/handler_api.php?api_key={}&action=setStatus&id={}&status=8'.format(
-                sms_active_key, id))
-    except Exception:
-        pass
 
 
 def open_fb():
@@ -219,12 +153,13 @@ def start():
     app = application.Application().start("D:\\Program Files\\Nox\\bin\\Nox.exe")
 
     try:
-        time.sleep(55)
+        time.sleep(45)
         # pywinauto.mouse.move(coords=(640, 340))
         open_fb()
-        # delete_user_from_phone()
 
-        time.sleep(15)
+        time.sleep(55)
+        delete_user_from_phone()
+
         pywinauto.mouse.click(coords=(550, 320))
         time.sleep(2)
         pywinauto.mouse.click(coords=(613, 330))
@@ -232,11 +167,13 @@ def start():
         # Name
         name = random.choice(names)
         last_name = random.choice(last_names)
-        pywinauto.keyboard.send_keys(str(pytils.translit.translify(name[0])))
+        pywinauto.keyboard.send_keys(str((name[0])))
         time.sleep(2)
         pywinauto.mouse.click(coords=(622, 198))
+        pywinauto.mouse.click(coords=(624, 198))
+
         time.sleep(3)
-        pywinauto.keyboard.send_keys(str(pytils.translit.translify(last_name)))
+        pywinauto.keyboard.send_keys(str((last_name)))
         time.sleep(2)
         pywinauto.mouse.click(coords=(620, 230))
         time.sleep(5)
@@ -246,55 +183,57 @@ def start():
             time.sleep(0.01)
             pywinauto.keyboard.send_keys('{BACKSPACE}')
 
-        time.sleep(0.5)
-        phone_number, id = get_number(0)
+        time.sleep(1.5)
+        phone_number, id = get_number()
         if phone_number is None:
             time.sleep(5)
             app.kill()
             time.sleep(5)
             return False
         print(phone_number)
-        pywinauto.keyboard.send_keys(str(phone_number))
         time.sleep(0.5)
+
+        pywinauto.keyboard.send_keys(str(phone_number))
+        time.sleep(1.5)
         pywinauto.mouse.click(coords=(513, 288))
         # DOB
         # day
 
-        time.sleep(0.5)
+        time.sleep(1.5)
         first_day_n = random.randint(1, 2)
         pywinauto.mouse.click(coords=(number.get(first_day_n)[0], number.get(first_day_n)[1]))
-        time.sleep(0.5)
+        time.sleep(1.5)
         first_day_n = random.randint(0, 9)
         pywinauto.mouse.click(coords=(number.get(first_day_n)[0], number.get(first_day_n)[1]))
 
         # month
-        time.sleep(0.5)
+        time.sleep(1.5)
         pywinauto.mouse.click(coords=(number.get(1)[0], number.get(1)[1]))
-        time.sleep(0.5)
+        time.sleep(1.5)
         first_month_n = random.randint(0, 2)
         pywinauto.mouse.click(coords=(number.get(first_month_n)[0], number.get(first_month_n)[1]))
 
         # year
-        time.sleep(0.5)
+        time.sleep(1.5)
         pywinauto.mouse.click(coords=(number.get(1)[0], number.get(1)[1]))
-        time.sleep(0.5)
+        time.sleep(1.5)
         pywinauto.mouse.click(coords=(number.get(9)[0], number.get(9)[1]))
-        time.sleep(0.5)
+        time.sleep(1.5)
         first_year_n = random.randint(5, 9)
         pywinauto.mouse.click(coords=(number.get(first_year_n)[0], number.get(first_year_n)[1]))
-        time.sleep(0.5)
+        time.sleep(1.5)
         first_year_n = random.randint(0, 9)
         pywinauto.mouse.click(coords=(number.get(first_year_n)[0], number.get(first_year_n)[1]))
-        time.sleep(0.5)
+        time.sleep(1.5)
         pywinauto.mouse.click(coords=(603, 245))
 
         # sex
-        time.sleep(0.5)
+        time.sleep(1.5)
         user_sex = sex.get(name[1])
         pywinauto.mouse.click(coords=(user_sex[0], user_sex[1]))
 
         # password
-        time.sleep(0.5)
+        time.sleep(1.5)
         password = get_pass(random.randint(3, 7))
         pywinauto.keyboard.send_keys(password)
         passwordn = get_pass(random.randint(3, 7))
@@ -347,19 +286,19 @@ def start():
             time.sleep(20)
 
             # log settings
-            time.sleep(1)
+            time.sleep(7)
             pywinauto.mouse.click(coords=(390, 480))
-            time.sleep(1)
-            pywinauto.mouse.click(coords=(685, 75))
-            time.sleep(1)
-            pywinauto.mouse.click(coords=(685, 75))
+            time.sleep(3)
+            pywinauto.mouse.click(coords=(695, 70))
+            time.sleep(3)
+            pywinauto.mouse.click(coords=(695, 70))
             time.sleep(10)
             pywinauto.mouse.click(coords=(490, 680))
             time.sleep(10)
-            pywinauto.mouse.click(coords=(695, 100))
+            pywinauto.mouse.click(coords=(705, 78))
             time.sleep(3)
             pywinauto.mouse.press(coords=(650, 170))
-            time.sleep(1)
+            time.sleep(2)
             pywinauto.mouse.scroll(coords=(650, 170), wheel_dist=-1)
             time.sleep(1)
             pywinauto.mouse.release(coords=(650, 170))
@@ -383,11 +322,12 @@ def start():
 
 def delete_user_from_phone():
     time.sleep(1)
-    pywinauto.mouse.click(coords=(700, 130))
+    pywinauto.mouse.click(coords=(700, 145))
     time.sleep(1)
-    pywinauto.mouse.click(coords=(600, 250))
+    pywinauto.mouse.click(coords=(600, 240))
     time.sleep(1)
     pywinauto.mouse.click(coords=(600, 430))
+    time.sleep(1)
 
 
 def delete_nox_phone():
@@ -407,31 +347,37 @@ def delete_nox_phone():
     time.sleep(5)
 
     app = application.Application().start("D:\\Program Files\\Nox\\bin\\Nox.exe")
-    time.sleep(100)
+    time.sleep(30)
     app.kill()
     time.sleep(10)
     app = application.Application().start("D:\\Program Files\\Nox\\bin\\Nox.exe")
-    time.sleep(100)
+    time.sleep(50)
     open_fb()
-    time.sleep(15)
+    time.sleep(10)
     app.kill()
 
 
 if __name__ == '__main__':
-    # restart()
+    # update_proxy()
+    # delete_nox_phone()
     iterator = 0
     mistake = 0
+    proxy_iterators = 0
+    proxy_mistake = 0
     while True:
         if not start():
             mistake += 1
-        time.sleep(40)
+        time.sleep(30)
+        proxy_iterators += 1
         iterator += 1
-        print(iterator)
-        print(mistake)
-        if iterator + mistake >= 10 or mistake >= 2:
+        if proxy_iterators >= 10:
+            update_proxy()
+            proxy_iterators = 0
+            time.sleep(10)
+        if iterator >= 100 or mistake >= 2:
             iterator = 0
             mistake = 0
             delete_nox_phone()
             print("reset parsing")
             # time.sleep(600)
-            time.sleep(180)
+            time.sleep(10)
