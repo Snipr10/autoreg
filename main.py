@@ -148,13 +148,14 @@ def restart():
     app.kill()
 
 
-def start():
+def start(proxy):
     print("start")
     app = application.Application().start("D:\\Program Files\\Nox\\bin\\Nox.exe")
 
     try:
         time.sleep(45)
-        # pywinauto.mouse.move(coords=(640, 340))
+        # pywinauto.mouse.move(coords=(640, 3proxy
+        # 40))
         open_fb()
 
         time.sleep(55)
@@ -271,7 +272,7 @@ def start():
         else:
             try:
                 file2write = open(phone_number, 'w')
-                file2write.write(phone_number + " " + password)
+                file2write.write(phone_number + " " + password + " " + proxy)
                 file2write.close()
             except Exception:
                 pass
@@ -293,8 +294,71 @@ def start():
             pywinauto.mouse.click(coords=(695, 70))
             time.sleep(10)
             pywinauto.mouse.click(coords=(490, 680))
+            time.sleep(25)
+            pywinauto.mouse.click(coords=(360, 70))
+            time.sleep(1)
+            pywinauto.mouse.click(coords=(670, 70))
+            time.sleep(7.3)
+            pywinauto.mouse.click(coords=(650, 680))
+            time.sleep(8.4)
+            pywinauto.mouse.click(coords=(647, 682))
+            time.sleep(1)
+            pywinauto.mouse.click(coords=(447, 642))
+            time.sleep(3)
+            pywinauto.mouse.click(coords=(460, 430))
+            time.sleep(3)
+            pywinauto.mouse.click(coords=(580, 680))
+            time.sleep(3.4)
+            pywinauto.mouse.click(coords=(450, 630))
+            time.sleep(3)
+            pywinauto.mouse.click(coords=(221, 123))
+            time.sleep(1)
+            pywinauto.mouse.click(coords=(544, 468))
+            time.sleep(1)
+            pywinauto.mouse.click(coords=(544, 670))
+            time.sleep(30)
+            pywinauto.mouse.click(coords=(544, 675))
+            time.sleep(3)
+            pywinauto.mouse.click(coords=(544, 390))
+            time.sleep(2)
+            pywinauto.mouse.click(coords=(544, 110))
+            time.sleep(0.5)
+            pywinauto.keyboard.send_keys("Москва")
+            pywinauto.mouse.click(coords=(444, 139))
+            time.sleep(0.5)
+            pywinauto.mouse.click(coords=(444, 139))
+            time.sleep(3.5)
+            pywinauto.mouse.click(coords=(449, 680))
+            time.sleep(3.5)
+            pywinauto.mouse.click(coords=(449, 680))
+            time.sleep(4.5)
+            pywinauto.mouse.click(coords=(449, 680))
+            time.sleep(4.8)
+            pywinauto.mouse.click(coords=(449, 680))
+            time.sleep(3.8)
+            pywinauto.mouse.click(coords=(449, 480))
+            time.sleep(1.8)
+            pywinauto.mouse.click(coords=(649, 680))
+            # pywinauto.mouse.click(coords=(449, 680))
+            time.sleep(7.3)
+            pywinauto.mouse.click(coords=(649, 680))
+            time.sleep(4.3)
+            pywinauto.mouse.click(coords=(449, 480))
+            time.sleep(1.8)
+            pywinauto.mouse.click(coords=(649, 680))
+            # pywinauto.mouse.click(coords=(449, 680))
+            time.sleep(9.5)
+            pywinauto.mouse.click(coords=(649, 680))
+            time.sleep(4.1)
+            pywinauto.mouse.click(coords=(449, 680))
+            time.sleep(4.1)
+            pywinauto.mouse.click(coords=(449, 680))
+            time.sleep(4.1)
+            pywinauto.mouse.click(coords=(449, 680))
+            time.sleep(3.1)
+            pywinauto.mouse.click(coords=(430, 70))
             time.sleep(10)
-            pywinauto.mouse.click(coords=(705, 68))
+            pywinauto.mouse.click(coords=(775, 68))
             time.sleep(3)
             pywinauto.mouse.press(coords=(650, 170))
             time.sleep(2)
@@ -321,7 +385,7 @@ def start():
 
 
 def delete_user_from_phone():
-    time.sleep(1)
+    time.sleep(5)
     pywinauto.mouse.click(coords=(700, 145))
     time.sleep(1)
     pywinauto.mouse.click(coords=(600, 240))
@@ -359,28 +423,17 @@ def delete_nox_phone(clean=True):
 
 
 if __name__ == '__main__':
-    update_proxy()
+    proxy = update_proxy()
     delete_nox_phone()
-    iterator = 0
     mistake = 0
-    proxy_iterators = 0
-    proxy_mistake = 0
     while True:
-        if not start():
+        if start(proxy):
+            proxy = update_proxy()
+            mistake = 0
+        else:
             mistake += 1
-        time.sleep(30)
-        proxy_iterators += 1
-        iterator += 1
-
-        if proxy_iterators >= 10:
-            update_proxy()
-            proxy_iterators = 0
-            time.sleep(10)
-        # if iterator >= 100 or mistake >= 1:
-        #     iterator = 0
-        #     mistake = 0
-        #     delete_nox_phone()
-        #     print("reset parsing")
-        #     # time.sleep(600)
-        #     time.sleep(3)
+        if mistake >= 5:
+            mistake = 0
+            proxy = update_proxy()
+        time.sleep(3)
         delete_nox_phone()

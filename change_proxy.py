@@ -15,6 +15,10 @@ def update_proxy():
         raise Exception("Proxy")
     change_proxy(new_proxy)
 
+    with open("proxy_new.txt", "a") as f:
+        f.write("\n" + str(new_proxy))
+    return new_proxy
+
 
 def change_proxy(proxy):
     app_proxier_trial = pywinauto.application.Application().start(
