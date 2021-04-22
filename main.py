@@ -7,7 +7,8 @@ from pywinauto import application
 
 import sms_activate_new
 import sms_active
-from change_proxy import update_proxy
+from account import save_account, save_creditional
+from change_proxy import update_proxy, save_proxy
 
 number = {1: (450, 540),
           2: (550, 540),
@@ -190,7 +191,7 @@ def start(proxy):
             time.sleep(5)
             app.kill()
             time.sleep(5)
-            return False
+            return False, None, None
         print(phone_number)
         time.sleep(1.5)
         pywinauto.keyboard.send_keys(str(phone_number).replace("+", ""))
@@ -268,7 +269,7 @@ def start(proxy):
             time.sleep(5)
             app.kill()
             time.sleep(5)
-            return False
+            return False, None, None
         else:
             try:
                 file2write = open(phone_number, 'w')
@@ -290,72 +291,72 @@ def start(proxy):
             pywinauto.mouse.click(coords=(390, 480))
             time.sleep(3)
             pywinauto.mouse.click(coords=(695, 70))
-            time.sleep(15)
+            time.sleep(18)
             pywinauto.mouse.click(coords=(695, 70))
-            time.sleep(10)
+            time.sleep(15)
             pywinauto.mouse.click(coords=(490, 680))
-            time.sleep(25)
+            time.sleep(35)
             pywinauto.mouse.click(coords=(360, 70))
             time.sleep(1)
             pywinauto.mouse.click(coords=(670, 70))
             time.sleep(7.3)
             pywinauto.mouse.click(coords=(650, 680))
-            time.sleep(8.4)
+            time.sleep(9.4)
             pywinauto.mouse.click(coords=(647, 682))
-            time.sleep(1)
+            time.sleep(3)
             pywinauto.mouse.click(coords=(447, 642))
-            time.sleep(3)
+            time.sleep(4)
             pywinauto.mouse.click(coords=(460, 430))
-            time.sleep(3)
+            time.sleep(5)
             pywinauto.mouse.click(coords=(580, 680))
-            time.sleep(3.4)
+            time.sleep(4.4)
             pywinauto.mouse.click(coords=(450, 630))
-            time.sleep(3)
+            time.sleep(4)
             pywinauto.mouse.click(coords=(221, 123))
-            time.sleep(1)
+            time.sleep(2)
             pywinauto.mouse.click(coords=(544, 468))
-            time.sleep(1)
+            time.sleep(2)
             pywinauto.mouse.click(coords=(544, 670))
             time.sleep(30)
             pywinauto.mouse.click(coords=(544, 675))
-            time.sleep(3)
+            time.sleep(4)
             pywinauto.mouse.click(coords=(544, 390))
-            time.sleep(2)
+            time.sleep(3)
             pywinauto.mouse.click(coords=(544, 110))
-            time.sleep(0.5)
+            time.sleep(1.5)
             pywinauto.keyboard.send_keys("Москва")
             pywinauto.mouse.click(coords=(444, 139))
-            time.sleep(0.5)
+            time.sleep(1.5)
             pywinauto.mouse.click(coords=(444, 139))
-            time.sleep(3.5)
-            pywinauto.mouse.click(coords=(449, 680))
-            time.sleep(3.5)
+            time.sleep(4.5)
             pywinauto.mouse.click(coords=(449, 680))
             time.sleep(4.5)
             pywinauto.mouse.click(coords=(449, 680))
-            time.sleep(4.8)
+            time.sleep(5.5)
             pywinauto.mouse.click(coords=(449, 680))
-            time.sleep(3.8)
+            time.sleep(6.8)
+            # pywinauto.mouse.click(coords=(449, 680))
+            # time.sleep(4.8)
+            # pywinauto.mouse.click(coords=(449, 480))
+            # time.sleep(2.8)
+            pywinauto.mouse.click(coords=(449, 680))
+            # pywinauto.mouse.click(coords=(449, 680))
+            time.sleep(8.3)
+            pywinauto.mouse.click(coords=(649, 680))
+            time.sleep(5.3)
             pywinauto.mouse.click(coords=(449, 480))
-            time.sleep(1.8)
+            time.sleep(2.8)
             pywinauto.mouse.click(coords=(649, 680))
             # pywinauto.mouse.click(coords=(449, 680))
-            time.sleep(7.3)
+            time.sleep(10.5)
             pywinauto.mouse.click(coords=(649, 680))
-            time.sleep(4.3)
-            pywinauto.mouse.click(coords=(449, 480))
-            time.sleep(1.8)
-            pywinauto.mouse.click(coords=(649, 680))
-            # pywinauto.mouse.click(coords=(449, 680))
-            time.sleep(9.5)
-            pywinauto.mouse.click(coords=(649, 680))
-            time.sleep(4.1)
+            time.sleep(5.1)
+            pywinauto.mouse.click(coords=(449, 680))
+            time.sleep(5.1)
+            pywinauto.mouse.click(coords=(449, 680))
+            time.sleep(5.1)
             pywinauto.mouse.click(coords=(449, 680))
             time.sleep(4.1)
-            pywinauto.mouse.click(coords=(449, 680))
-            time.sleep(4.1)
-            pywinauto.mouse.click(coords=(449, 680))
-            time.sleep(3.1)
             pywinauto.mouse.click(coords=(430, 70))
             time.sleep(10)
             pywinauto.mouse.click(coords=(775, 68))
@@ -378,10 +379,10 @@ def start(proxy):
             delete_user_from_phone()
             pywinauto.mouse.click(coords=(360, 70))
             app.kill()
-        return True
+        return True, phone_number, password
     except Exception:
         app.kill()
-        return False
+        return False, None, None
 
 
 def delete_user_from_phone():
@@ -427,13 +428,24 @@ if __name__ == '__main__':
     delete_nox_phone()
     mistake = 0
     while True:
-        if start(proxy):
-            proxy = update_proxy()
-            mistake = 0
-        else:
+        try:
+            status, account_login, account_pass = start(proxy)
+            if status:
+                proxy_id = save_proxy(proxy)
+                if proxy_id is not None:
+                    account_id = save_account(account_login, account_pass, proxy_id)
+                    if account_id is not None:
+                        res_id = save_creditional(account_id, proxy_id)
+                        print("res id " + str(res_id))
+                proxy = update_proxy()
+                mistake = 0
+            else:
+                mistake += 1
+            if mistake >= 5:
+                mistake = 0
+                proxy = update_proxy()
+            time.sleep(3)
+            delete_nox_phone()
+        except Exception:
             mistake += 1
-        if mistake >= 5:
-            mistake = 0
-            proxy = update_proxy()
-        time.sleep(3)
-        delete_nox_phone()
+
