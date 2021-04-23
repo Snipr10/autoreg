@@ -1,7 +1,8 @@
 import httpx
 from onlinesimru import GetNumbers
 
-api_key = "71cc492d41aea50bc9d3578e15d8a6b3"
+from keys import api_key
+
 numbers = GetNumbers(api_key)
 
 

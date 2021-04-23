@@ -3,7 +3,8 @@ import time
 import requests
 
 # sms_active
-sms_active_key = "28ee25c3e7d1f3d03A631fccdA0A7dbb"
+from keys import sms_active_key
+
 country_codes = [0, 0, 0, 135, 0, 2, 0, 11, 0, 115, 0, 6, 0]
 
 

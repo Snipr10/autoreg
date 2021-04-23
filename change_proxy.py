@@ -5,8 +5,18 @@ import time
 import pywinauto
 import requests
 
-
+is_create_new = False
 def update_proxy():
+    if is_create_new:
+        return buy_new_proxy()
+    else:
+        return update_proxy_from_text()
+
+
+def buy_new_proxy():
+    print("a")
+
+def update_proxy_from_text():
     try:
         with open("proxy.txt", 'r') as f:
             lines = f.readlines()
